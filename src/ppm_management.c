@@ -316,9 +316,55 @@ void free_image_data_mem(image_info_t *image_info){
 #endif 
 }
 
-
-
+/*
+*   @brief we take in image data and we "age" it so that it looks older. 
+*/
 image_info_t age_image_data(image_info_t image_info){
+
+}
+
+/*
+*   @brief Generates a black and white image copy of image_info_t placed in
+*   @notes It's a new image, allowing us to have an old and new copy of the original image
+*   @params image_info_t image_info(source information)
+*   @returns image_info_t new file with greyscale information
+*/
+image_info_t greyscale_image_data(image_info_t image_info){
+    image_info_t new_image_info = image_info; 
+    // Create a new array and copy the contents over. 
+    uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
+    memcpy(newimage, image_info.image_dat.image_arr, image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
+    // Change pointer for new image. 
+    new_image_info.image_dat.image_arr = newimage; 
+    
+    // Struct that deals with pixel informatiojn
+    set_get_pixel_t sp; 
+    sp.image_data = &new_image_info.image_dat; 
+
+    for(uint32_t y = 0; y < image_info.image_dat.y; y++){
+        for(uint32_t x = 0; x < image_info.image_dat.x; x++){
+            sp.x = x; 
+            sp.y = y; 
+
+            // Gets the original pixel data. 
+            get_pixel(&sp);
+
+            // Generate pixel average. 
+            uint32_t ave = ((uint32_t)sp.r + (uint32_t)sp.g + (uint32_t)sp.b)/3; 
+            sp.r = ave; 
+            sp.g = ave; 
+            sp.b = ave; 
+
+            // Sets the pixel to the desired value
+            set_pixel(sp);
+        }
+    }
+
+    // Since we are just manipulating the passed in information we should be chilling. 
+    return new_image_info; 
+}
+
+static inline image_info_t image_info_copy(image_info_t image_info){
 
 }
 

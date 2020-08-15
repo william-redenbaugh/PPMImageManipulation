@@ -109,4 +109,12 @@ typedef enum{
 */
 extern file_write_status_t write_file(char file[], size_t file_size, image_info_t image_info);
 
+/*
+*   @brief Generates a black and white image copy of image_info_t placed in
+*   @notes It's a new image, allowing us to have an old and new copy of the original image
+*   @params image_info_t image_info(source information)
+*   @returns image_info_t new file with greyscale information
+*/
+image_info_t greyscale_image_data(image_info_t image_info);
+
 #endif 

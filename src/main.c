@@ -26,8 +26,9 @@ int main(void){
     //unpack_image_info_t image_unpack = unpack_image(file_info.str_ptr, file_info.str_size);
     image_info_t image_unpack = unpack_image(file, sizeof(file));
     
+    image_info_t blacknwhite_image = greyscale_image_data(image_unpack);
     char newfile[] = "newfile.ppm";
     // Write the image data to a file. 
-    write_file(newfile, sizeof(newfile), image_unpack);
+    write_file(newfile, sizeof(newfile), blacknwhite_image);
     return 0; 
 }
