@@ -16,6 +16,8 @@ extern pixel_set_get_return_t get_pixel(set_get_pixel_t *sp);
 extern file_write_status_t write_file(char file[], size_t file_size, image_info_t image_info);
 inline void write_image_metadata(image_info_t *image_info, FILE *fp); 
 inline void write_image_data(image_info_t *image_info, FILE *fp);
+static inline image_info_t image_info_copy(image_info_t image_info);
+
 
 /*
     How is the image array stored in memory? That's an interested question that you have professor. I'm glad you asked. 
@@ -295,6 +297,199 @@ inline void write_image_data(image_info_t *image_info, FILE *fp){
 }
 
 /*
+*   @brief we take in image data and we "age" it so that it looks older. 
+*/
+image_info_t age_image_data(image_info_t image_info){
+
+}
+
+/*
+*   @brief Generates a black and white image copy of image_info_t placed in
+*   @notes It's a new image, allowing us to have an old and new copy of the original image
+*   @params image_info_t image_info(source information)
+*   @returns image_info_t new file with greyscale information
+*/
+image_info_t greyscale_image_data(image_info_t image_info){
+    image_info_t new_image_info = image_info; 
+    // Create a new array and copy the contents over. 
+    uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
+    // Change pointer for new image. 
+    new_image_info.image_dat.image_arr = newimage; 
+    
+    // Struct that deals with pixel informatiojn
+    set_get_pixel_t sp; 
+    for(uint32_t y = 0; y < image_info.image_dat.y; y++){
+        for(uint32_t x = 0; x < image_info.image_dat.x; x++){
+            // Check current image with color data. 
+            sp.image_data = &image_info.image_dat; 
+
+            // Set x and y corridinates. 
+            sp.x = x; 
+            sp.y = y; 
+
+            // Gets the original pixel data. 
+            get_pixel(&sp);
+
+            // Generate pixel average. 
+            uint32_t ave = ((uint32_t)sp.r + (uint32_t)sp.g + (uint32_t)sp.b)/3; 
+            sp.r = ave; 
+            sp.g = ave; 
+            sp.b = ave; 
+
+            // Set our source destination as our last image data. 
+            sp.image_data = &new_image_info.image_dat; 
+
+            // Sets the pixel to the desired value for our source destination
+            set_pixel(sp);
+        }
+    }
+
+    // Send em the new image.  
+    return new_image_info; 
+}
+
+/*
+*   @brief Takes in an image information struct, and returns a sharpened copy of that image
+*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
+*   @params image_info_t image_info(the image that we will process)
+*   @returns copy of image with sharpening applied.  
+*/
+image_info_t sharpen_image_data(image_info_t image_info){
+    image_info_t new_image_info = image_info; 
+    // Create a new array and copy the contents over. 
+    uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
+    // Change pointer for new image. 
+    new_image_info.image_dat.image_arr = newimage; 
+    
+    // Struct that deals with pixel informatiojn
+    set_get_pixel_t sp; 
+
+    /* Red green and blue struct that deals with surrounding pixels.    
+    The data is stored as shown: 
+    [0][1][2]
+    [3][4][5]
+    [6][7][8]
+    This is done for semantic purposes. 
+    */
+    struct{
+        int r; 
+        int g; 
+        int b; 
+    } surrounding_pixel[9];
+
+
+    for(uint32_t y = 1; y < image_info.image_dat.y-1; y++){
+        for(uint32_t x = 1; x < image_info.image_dat.x-1; x++){
+            // Check current image with color data. 
+            sp.image_data = &image_info.image_dat; 
+            
+            // Set x and y corridinates. 
+            sp.x = x - 1; 
+            sp.y = y - 1; 
+
+            // Gets the original pixel data. 
+            get_pixel(&sp);
+
+            surrounding_pixel[0].r = sp.r;
+            surrounding_pixel[0].g = sp.g; 
+            surrounding_pixel[0].b = sp.b; 
+
+            sp.x = x; 
+            sp.y = y - 1; 
+            get_pixel(&sp);            
+
+            surrounding_pixel[1].r = sp.r;
+            surrounding_pixel[1].g = sp.g; 
+            surrounding_pixel[1].b = sp.b; 
+
+            sp.x = x + 1; 
+            sp.y = y - 1; 
+
+            get_pixel(&sp);
+            surrounding_pixel[2].r = sp.r;
+            surrounding_pixel[2].g = sp.g; 
+            surrounding_pixel[2].b = sp.b; 
+
+            sp.x = x - 1; 
+            sp.y = y; 
+            get_pixel(&sp);
+
+            surrounding_pixel[3].r = sp.r;
+            surrounding_pixel[3].g = sp.g; 
+            surrounding_pixel[3].b = sp.b; 
+
+            sp.x = x; 
+            sp.y = y; 
+            get_pixel(&sp);
+
+            surrounding_pixel[4].r = sp.r;
+            surrounding_pixel[4].g = sp.g; 
+            surrounding_pixel[4].b = sp.b;
+
+            sp.x = x + 1; 
+            sp.y = y; 
+            get_pixel(&sp);
+
+            surrounding_pixel[5].r = sp.r;
+            surrounding_pixel[5].g = sp.g; 
+            surrounding_pixel[5].b = sp.b;
+
+            sp.x = x-1; 
+            sp.y = y + 1; 
+            get_pixel(&sp);
+
+            surrounding_pixel[6].r = sp.r;
+            surrounding_pixel[6].g = sp.g; 
+            surrounding_pixel[6].b = sp.b;
+
+            sp.x = x; 
+            sp.y = y + 1; 
+            get_pixel(&sp);
+
+            surrounding_pixel[7].r = sp.r;
+            surrounding_pixel[7].g = sp.g; 
+            surrounding_pixel[7].b = sp.b;
+
+            sp.x = x + 1; 
+            sp.y = y + 1; 
+            get_pixel(&sp);
+
+            surrounding_pixel[8].r = sp.r;
+            surrounding_pixel[8].g = sp.g; 
+            surrounding_pixel[8].b = sp.b;
+
+            uint32_t red = 6 * surrounding_pixel[4].r; 
+            uint32_t green = 6 * surrounding_pixel[4].g; 
+            uint32_t blue = 6 * surrounding_pixel[4].b; 
+            
+            for(uint8_t i = 0; i < 4; i++){
+                if(i != 4){
+                    red = red - surrounding_pixel[i].r; 
+                    green = green - surrounding_pixel[i].g; 
+                    blue = blue - surrounding_pixel[i].b; 
+                }
+            }
+            
+            sp.x = x;
+            sp.y = y; 
+
+            // Newly calculated information
+            sp.r = red; 
+            sp.g = green; 
+            sp.b = blue; 
+
+            // Set our source destination as our last image data. 
+            sp.image_data = &new_image_info.image_dat; 
+            // Sets the pixel to the desired value for our source destination
+            set_pixel(sp);
+        }
+    }
+
+    // Send em the new image.  
+    return new_image_info; 
+}
+
+/*
 *   @brief So that we don't end up with tons of memory issues, we clear out our image array buffer. s
 *   @notes If you enable debug mode, then we also clear our the struct since sometime's I'm trying to read that data   
 *   for debugging purposes, and it comes in handy. 
@@ -314,58 +509,6 @@ void free_image_data_mem(image_info_t *image_info){
     image_info->image_dat.x = 0; 
     image_info->image_dat.y = 0; 
 #endif 
-}
-
-/*
-*   @brief we take in image data and we "age" it so that it looks older. 
-*/
-image_info_t age_image_data(image_info_t image_info){
-
-}
-
-/*
-*   @brief Generates a black and white image copy of image_info_t placed in
-*   @notes It's a new image, allowing us to have an old and new copy of the original image
-*   @params image_info_t image_info(source information)
-*   @returns image_info_t new file with greyscale information
-*/
-image_info_t greyscale_image_data(image_info_t image_info){
-    image_info_t new_image_info = image_info; 
-    // Create a new array and copy the contents over. 
-    uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
-    memcpy(newimage, image_info.image_dat.image_arr, image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
-    // Change pointer for new image. 
-    new_image_info.image_dat.image_arr = newimage; 
-    
-    // Struct that deals with pixel informatiojn
-    set_get_pixel_t sp; 
-    sp.image_data = &new_image_info.image_dat; 
-
-    for(uint32_t y = 0; y < image_info.image_dat.y; y++){
-        for(uint32_t x = 0; x < image_info.image_dat.x; x++){
-            sp.x = x; 
-            sp.y = y; 
-
-            // Gets the original pixel data. 
-            get_pixel(&sp);
-
-            // Generate pixel average. 
-            uint32_t ave = ((uint32_t)sp.r + (uint32_t)sp.g + (uint32_t)sp.b)/3; 
-            sp.r = ave; 
-            sp.g = ave; 
-            sp.b = ave; 
-
-            // Sets the pixel to the desired value
-            set_pixel(sp);
-        }
-    }
-
-    // Since we are just manipulating the passed in information we should be chilling. 
-    return new_image_info; 
-}
-
-static inline image_info_t image_info_copy(image_info_t image_info){
-
 }
 
 #undef DEFINE_PPM

@@ -6,6 +6,7 @@
 #include <assert.h> 
 #include <stdint.h> 
 #include <stdlib.h> 
+#include <math.h> 
 
 // If we want a specific height 
 //#define SPECIFIC_HIEGHT
@@ -116,5 +117,20 @@ extern file_write_status_t write_file(char file[], size_t file_size, image_info_
 *   @returns image_info_t new file with greyscale information
 */
 image_info_t greyscale_image_data(image_info_t image_info);
+
+/*
+*   @brief Takes in an image information struct, and returns a sharpened copy of that image
+*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
+*   @params image_info_t image_info(the image that we will process)
+*   @returns copy of image with sharpening applied.  
+*/
+image_info_t sharpen_image_data(image_info_t image_info);
+
+/*
+*   @brief So that we don't end up with tons of memory issues, we clear out our image array buffer. s
+*   @notes If you enable debug mode, then we also clear our the struct since sometime's I'm trying to read that data   
+*   for debugging purposes, and it comes in handy. 
+*/
+void free_image_data_mem(image_info_t *image_info);
 
 #endif 

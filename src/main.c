@@ -26,9 +26,15 @@ int main(void){
     //unpack_image_info_t image_unpack = unpack_image(file_info.str_ptr, file_info.str_size);
     image_info_t image_unpack = unpack_image(file, sizeof(file));
     
-    image_info_t blacknwhite_image = greyscale_image_data(image_unpack);
+    //image_info_t blacknwhite_image = greyscale_image_data(image_unpack);
+    image_info_t sharpen_image = sharpen_image_data(image_unpack);
+
     char newfile[] = "newfile.ppm";
     // Write the image data to a file. 
-    write_file(newfile, sizeof(newfile), blacknwhite_image);
+    write_file(newfile, sizeof(newfile), sharpen_image);
+
+    // Don't wanna leave any free data lying around, so lets clear it!
+    free_image_data_mem(&image_unpack);
+    free_image_data_mem(&sharpen_image);
     return 0; 
 }
