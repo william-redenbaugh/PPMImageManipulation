@@ -303,6 +303,21 @@ image_info_t age_image_data(image_info_t image_info){
 
 }
 
+inline set_get_pixel_t greyscale_average(set_get_pixel_t sp, uint32_t x, uint32_t y){
+    sp.x = x; 
+    sp.y = y; 
+
+    // Gets the original pixel data. 
+    get_pixel(&sp);
+
+    // Generate pixel average. 
+    uint32_t ave = ((uint32_t)sp.r + (uint32_t)sp.g + (uint32_t)sp.b)/3; 
+    sp.r = ave; 
+    sp.g = ave; 
+    sp.b = ave; 
+    return sp;
+}
+
 /*
 *   @brief Generates a black and white image copy of image_info_t placed in
 *   @notes It's a new image, allowing us to have an old and new copy of the original image
@@ -322,23 +337,10 @@ image_info_t greyscale_image_data(image_info_t image_info){
         for(uint32_t x = 0; x < image_info.image_dat.x; x++){
             // Check current image with color data. 
             sp.image_data = &image_info.image_dat; 
-
-            // Set x and y corridinates. 
-            sp.x = x; 
-            sp.y = y; 
-
-            // Gets the original pixel data. 
-            get_pixel(&sp);
-
-            // Generate pixel average. 
-            uint32_t ave = ((uint32_t)sp.r + (uint32_t)sp.g + (uint32_t)sp.b)/3; 
-            sp.r = ave; 
-            sp.g = ave; 
-            sp.b = ave; 
-
+            // Changes pixel to greyscale. 
+            sp = greyscale_average(sp, x, y);
             // Set our source destination as our last image data. 
             sp.image_data = &new_image_info.image_dat; 
-
             // Sets the pixel to the desired value for our source destination
             set_pixel(sp);
         }
@@ -346,6 +348,46 @@ image_info_t greyscale_image_data(image_info_t image_info){
 
     // Send em the new image.  
     return new_image_info; 
+}
+
+/*
+*   @brief Gets pixel data with an offset. Basically let's say we have a set_get_pixel, with preloaded pixel values inside
+*   This way we can get the surrounding pixel data. 
+*/
+inline surrounding_pixels_t get_pixel_offset_data(set_get_pixel_t sp, int x, int y){
+    surrounding_pixels_t surround_pixel; 
+    sp.x = sp.x + x; 
+    sp.y = sp.y + y;
+
+    // Get pixel data. 
+    get_pixel(&sp);
+
+    // Get pixel information
+    surround_pixel.r = sp.r;
+    surround_pixel.g = sp.g; 
+    surround_pixel.b = sp.b; 
+    return surround_pixel; 
+}
+
+inline void gather_surrounding_pixels(set_get_pixel_t sp, surrounding_pixels_t surrounding_pixel[9], uint32_t x, uint32_t y){
+    // Getting top left pixel 
+    surrounding_pixel[0] = get_pixel_offset_data(sp, -1, -1);
+    // Getting top middle pixel 
+    surrounding_pixel[1] = get_pixel_offset_data(sp, 0, -1);
+    // Getting top right pixel 
+    surrounding_pixel[2] = get_pixel_offset_data(sp, 1, -1);
+    // Getting the left pixel. 
+    surrounding_pixel[3] = get_pixel_offset_data(sp, -1, 0);
+    // Getting the center pixel(aka the primary pixel in question)
+    surrounding_pixel[4] = get_pixel_offset_data(sp, 0, 0);
+    // Get the pixel to the right
+    surrounding_pixel[5] = get_pixel_offset_data(sp, 1, 0);
+    // Get the bottom left pixel
+    surrounding_pixel[6] = get_pixel_offset_data(sp, -1, 1);
+    // Get the bottom pixel. 
+    surrounding_pixel[7] = get_pixel_offset_data(sp, 0, 1); 
+    // Get the bottom right pixel
+    surrounding_pixel[8] = get_pixel_offset_data(sp, 1, 1);
 }
 
 /*
@@ -371,107 +413,30 @@ image_info_t sharpen_image_data(image_info_t image_info){
     [6][7][8]
     This is done for semantic purposes. 
     */
-    struct{
-        int r; 
-        int g; 
-        int b; 
-    } surrounding_pixel[9];
-
+    surrounding_pixels_t surrounding_pixel[9]; 
 
     for(uint32_t y = 1; y < image_info.image_dat.y-1; y++){
         for(uint32_t x = 1; x < image_info.image_dat.x-1; x++){
             // Check current image with color data. 
             sp.image_data = &image_info.image_dat; 
             
-            // Set x and y corridinates. 
-            sp.x = x - 1; 
-            sp.y = y - 1; 
+            sp.x = x;
+            sp.y = y;
 
-            // Gets the original pixel data. 
-            get_pixel(&sp);
-
-            surrounding_pixel[0].r = sp.r;
-            surrounding_pixel[0].g = sp.g; 
-            surrounding_pixel[0].b = sp.b; 
-
-            sp.x = x; 
-            sp.y = y - 1; 
-            get_pixel(&sp);            
-
-            surrounding_pixel[1].r = sp.r;
-            surrounding_pixel[1].g = sp.g; 
-            surrounding_pixel[1].b = sp.b; 
-
-            sp.x = x + 1; 
-            sp.y = y - 1; 
-
-            get_pixel(&sp);
-            surrounding_pixel[2].r = sp.r;
-            surrounding_pixel[2].g = sp.g; 
-            surrounding_pixel[2].b = sp.b; 
-
-            sp.x = x - 1; 
-            sp.y = y; 
-            get_pixel(&sp);
-
-            surrounding_pixel[3].r = sp.r;
-            surrounding_pixel[3].g = sp.g; 
-            surrounding_pixel[3].b = sp.b; 
-
-            sp.x = x; 
-            sp.y = y; 
-            get_pixel(&sp);
-
-            surrounding_pixel[4].r = sp.r;
-            surrounding_pixel[4].g = sp.g; 
-            surrounding_pixel[4].b = sp.b;
-
-            sp.x = x + 1; 
-            sp.y = y; 
-            get_pixel(&sp);
-
-            surrounding_pixel[5].r = sp.r;
-            surrounding_pixel[5].g = sp.g; 
-            surrounding_pixel[5].b = sp.b;
-
-            sp.x = x-1; 
-            sp.y = y + 1; 
-            get_pixel(&sp);
-
-            surrounding_pixel[6].r = sp.r;
-            surrounding_pixel[6].g = sp.g; 
-            surrounding_pixel[6].b = sp.b;
-
-            sp.x = x; 
-            sp.y = y + 1; 
-            get_pixel(&sp);
-
-            surrounding_pixel[7].r = sp.r;
-            surrounding_pixel[7].g = sp.g; 
-            surrounding_pixel[7].b = sp.b;
-
-            sp.x = x + 1; 
-            sp.y = y + 1; 
-            get_pixel(&sp);
-
-            surrounding_pixel[8].r = sp.r;
-            surrounding_pixel[8].g = sp.g; 
-            surrounding_pixel[8].b = sp.b;
-
-            uint32_t red = 6 * surrounding_pixel[4].r; 
-            uint32_t green = 6 * surrounding_pixel[4].g; 
-            uint32_t blue = 6 * surrounding_pixel[4].b; 
+            // We get all the pixel data from the surrounding pixels
+            gather_surrounding_pixels(sp, surrounding_pixel, x, y);
+        
+            uint32_t red = 9 * surrounding_pixel[4].r; 
+            uint32_t green = 9* surrounding_pixel[4].g; 
+            uint32_t blue = 9 * surrounding_pixel[4].b; 
             
-            for(uint8_t i = 0; i < 4; i++){
+            for(uint8_t i = 0; i < 9; i++){
                 if(i != 4){
                     red = red - surrounding_pixel[i].r; 
                     green = green - surrounding_pixel[i].g; 
                     blue = blue - surrounding_pixel[i].b; 
                 }
-            }
-            
-            sp.x = x;
-            sp.y = y; 
+            } 
 
             // Newly calculated information
             sp.r = red; 
@@ -511,4 +476,89 @@ void free_image_data_mem(image_info_t *image_info){
 #endif 
 }
 
+/*
+*   @brief Takes in an image information struct, and returns a hue modified copy of that image
+*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
+*   @params image_info_t image_info(the image that we will process)
+*   @returns copy of image with sharpening applied.  
+*/
+// Used for functional purposes. 
+#define PI 3.14159265 
+image_info_t change_hue(image_info_t image_info, double hue){
+    // If hue is greater than 360, then let's just allow ourselves to wrap around. 
+    if(hue > 360){
+        hue = (double)((uint16_t)(hue) % 360); 
+    }
+    // If it's a negative value, then we do the inverted version of the value above us 
+    if(hue < 0){
+        hue = (double)((uint16_t)(hue) % 360) * -1; 
+    }
+
+    image_info_t new_image_info = image_info; 
+    // Create a new array and copy the contents over. 
+    uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
+    // Change pointer for new image. 
+    new_image_info.image_dat.image_arr = newimage; 
+    
+    // Struct that deals with pixel informatiojn
+    set_get_pixel_t sp; 
+
+    // Information that we are processing. 
+    double alpha = (2 * cos(hue * PI / 180) + 1)/3;
+    double beta = ((1 - cos(hue * PI / 180))/3) - (sin(hue * PI / 180))/sqrt(3.0); 
+    double gamma = ((1 - cos(hue * PI / 180))/3) + (sin(hue * PI / 180))/sqrt(3.0); 
+    
+    for(uint32_t y = 0; y < image_info.image_dat.y; y++){
+        for(uint32_t x = 0; x < image_info.image_dat.x; x++){
+            // Check current image with color data. 
+            sp.image_data = &image_info.image_dat; 
+
+            // Set x and y corridinates. 
+            sp.x = x; 
+            sp.y = y; 
+
+            // Gets the original pixel data. 
+            get_pixel(&sp);
+
+            // Buffers for use later. 
+            double red = (double)sp.r; 
+            double green = (double)sp.g; 
+            double blue = (double)sp.b; 
+
+            // Offset color hue
+            int r = (double)(red * alpha + green * beta + blue * gamma); 
+            int g = (double)(red * gamma + green * alpha + blue * beta); 
+            int b = (double)(red * beta + green * gamma + blue * alpha); 
+
+            if(r > 255)
+                r = 255;
+            if(r < 0)
+                r = 0;  
+            if(g > 255)
+                g = 255;
+
+            if (r < 0)
+                r = 0; 
+
+            if(b > 255)
+                g = 255; 
+            if(b < 0)
+                b = 0; 
+
+            sp.r = r; 
+            sp.g = g; 
+            sp.b = b; 
+
+            // Set our source destination as our last image data. 
+            sp.image_data = &new_image_info.image_dat; 
+
+            // Sets the pixel to the desired value for our source destination
+            set_pixel(sp);
+        }
+    }
+
+    // Send em the new image.  
+    return new_image_info;
+}
+#undef PI
 #undef DEFINE_PPM

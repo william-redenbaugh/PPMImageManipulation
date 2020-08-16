@@ -118,6 +118,12 @@ extern file_write_status_t write_file(char file[], size_t file_size, image_info_
 */
 image_info_t greyscale_image_data(image_info_t image_info);
 
+typedef struct{
+    int r; 
+    int g; 
+    int b; 
+}surrounding_pixels_t;
+
 /*
 *   @brief Takes in an image information struct, and returns a sharpened copy of that image
 *   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
@@ -125,6 +131,14 @@ image_info_t greyscale_image_data(image_info_t image_info);
 *   @returns copy of image with sharpening applied.  
 */
 image_info_t sharpen_image_data(image_info_t image_info);
+
+/*
+*   @brief Takes in an image information struct, and returns a hue modified copy of that image
+*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
+*   @params image_info_t image_info(the image that we will process)
+*   @returns copy of image with sharpening applied.  
+*/
+image_info_t change_hue(image_info_t image_info, double hue); 
 
 /*
 *   @brief So that we don't end up with tons of memory issues, we clear out our image array buffer. s
