@@ -36,37 +36,6 @@ typedef enum{
     PIXEL_SET_FAILIURE_MAXRES_OUT_OF_BOUNDS
 }pixel_set_get_return_t;
 
-typedef struct{
-    // Pointer to the primary image data array and text information
-    image_data_t *image_data; 
-
-    // RGB value that we want to progrma
-    uint16_t r; 
-    uint16_t g; 
-    uint16_t b; 
-    
-    // X and Y position of the pixel we want to set. 
-    uint16_t x; 
-    uint16_t y; 
-
-}set_get_pixel_t; 
-
-/*
-*   @brief Allows us to set a pixel in the set_get_pixel_ptr
-*   @params set_get_pixel_t. 
-*/
-pixel_set_get_return_t set_pixel(set_get_pixel_t sp); 
-
-/*
-*   @brief Allows us to get a pixel value. 
-*   @notes set_get_pixel_t pointer
-*/
-pixel_set_get_return_t get_pixel(set_get_pixel_t *sp);
-
-//#define SPECIFIC_HIEGHT
-#define WIDTH   600
-#define HIEGHT  400
-
 typedef enum{
     IMAGE_NOT_UNPACKED, 
     IMAGE_UNPACK_SUCCESS, 
@@ -92,7 +61,11 @@ typedef struct{
     // Struct that will hold all of our image information
     image_data_t image_dat; 
 }image_info_t;
-
+/*
+*   @brief Takes in a file path, along with the length of the path, and copies the photo information in
+*   @params char *file_path, pointer to the begining char string 
+*   @params size_t file_path_len size of the string .
+*/
 image_info_t unpack_image(char *file_path, size_t file_path_len);
 
 typedef enum{
@@ -118,12 +91,6 @@ extern file_write_status_t write_file(char file[], size_t file_size, image_info_
 */
 image_info_t greyscale_image_data(image_info_t image_info);
 
-typedef struct{
-    int r; 
-    int g; 
-    int b; 
-}surrounding_pixels_t;
-
 /*
 *   @brief Takes in an image information struct, and returns a sharpened copy of that image
 *   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
@@ -132,10 +99,7 @@ typedef struct{
 */
 image_info_t sharpen_image_data(image_info_t image_info);
 
-/*
-*   @brief Takes in an image information struct, and returns a hue modified copy of that image
-*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
-*   @params image_info_t image_info(the image that we will process)
+/*Okok. o(the image that we will process)
 *   @returns copy of image with sharpening applied.  
 */
 image_info_t change_hue(image_info_t image_info, double hue); 
