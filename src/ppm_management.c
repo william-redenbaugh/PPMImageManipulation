@@ -374,9 +374,12 @@ image_info_t age_image_data(image_info_t image_info){
             sp.image_data = &image_info.image_dat; 
             sp.x = x; 
             sp.y = y; 
+            get_pixel(&sp); 
 
-            // Changes pixel to greyscale. 
-            sp = greyscale_average(sp);
+            sp.b = (sp.r + sp.g + sp.b)/ 5; 
+            sp.r = (uint16_t)((double)sp.b * 1.6);
+            sp.g = (uint16_t)((double)sp.b * 1.6); 
+
             // Set our source destination as our last image data. 
             sp.image_data = &new_image_info.image_dat; 
             // Sets the pixel to the desired value for our source destination
@@ -456,6 +459,7 @@ image_info_t sharpen_image_data(image_info_t image_info){
     // Struct that deals with pixel informatiojn
     set_get_pixel_t sp; 
 
+    // Surrounding pixel struct that has everything
     surrounding_pixels_t surrounding_pixel[9]; 
 
     for(uint32_t y = 1; y < image_info.image_dat.y-1; y++){
@@ -596,7 +600,6 @@ void free_image_data_mem(image_info_t *image_info){
 *   @returns copy of image with sharpening applied.  
 */
 // Used for functional purposes. 
-
 image_info_t change_hue(image_info_t image_info, double hue){
     image_info_t new_image_info = image_info; 
     // Create a new array and copy the contents over. 

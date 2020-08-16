@@ -4,11 +4,8 @@
 // Including the libraries that we wanna deal with
 // Standard input output libary that will let us accces files 
 #include <stdio.h> 
-// String library for random string information
 #include <string.h> 
-// Error and debug testing
 #include <assert.h> 
-// Standard library that has a bunch of declarations n shit
 #include <stdint.h> 
 #include <stdlib.h> 
 
@@ -18,10 +15,23 @@
 */
 typedef struct{
     char* str_ptr;  
-    uint32_t str_size; 
+    size_t str_size; 
 }file_information_t; 
 
+/*
+*   @brief Allows us to get file from the file path
+*   @returns file_information_t file struct. 
+*/
 file_information_t prompt_file_information(void);
 
+/*
+*   @brief Prints out the main header: 
+*/
+void print_menu(void);
 
+/*
+*   @brief Which options are available?
+*   @returns choice a month. 
+*/
+uint8_t prompt_choice(void);
 #endif 

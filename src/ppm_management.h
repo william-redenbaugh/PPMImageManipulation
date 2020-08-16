@@ -61,6 +61,7 @@ typedef struct{
     // Struct that will hold all of our image information
     image_data_t image_dat; 
 }image_info_t;
+
 /*
 *   @brief Takes in a file path, along with the length of the path, and copies the photo information in
 *   @params char *file_path, pointer to the begining char string 
@@ -84,6 +85,13 @@ typedef enum{
 extern file_write_status_t write_file(char file[], size_t file_size, image_info_t image_info);
 
 /*
+*   @brief we take in image data and we "age" it so that it looks older.
+*   @params image_info_t previous image data
+*   @returns new image struct.  
+*/
+image_info_t age_image_data(image_info_t image_info); 
+
+/*
 *   @brief Generates a black and white image copy of image_info_t placed in
 *   @notes It's a new image, allowing us to have an old and new copy of the original image
 *   @params image_info_t image_info(source information)
@@ -99,7 +107,10 @@ image_info_t greyscale_image_data(image_info_t image_info);
 */
 image_info_t sharpen_image_data(image_info_t image_info);
 
-/*Okok. o(the image that we will process)
+/*
+*   @brief Takes in an image information struct, and returns a hue modified copy of that image
+*   @notes Previous image info is retained so we have a copy, feel free to delete that copy later on if you see fit. 
+*   @params image_info_t image_info(the image that we will process)
 *   @returns copy of image with sharpening applied.  
 */
 image_info_t change_hue(image_info_t image_info, double hue); 
