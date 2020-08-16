@@ -426,7 +426,7 @@ image_info_t sharpen_image_data(image_info_t image_info){
             // We get all the pixel data from the surrounding pixels
             gather_surrounding_pixels(sp, surrounding_pixel, x, y);
         
-            uint32_t red = 9 * surrounding_pixel[4].r; 
+            int32_t red = 9 * surrounding_pixel[4].r; 
             uint32_t green = 9* surrounding_pixel[4].g; 
             uint32_t blue = 9 * surrounding_pixel[4].b; 
             
@@ -437,7 +437,19 @@ image_info_t sharpen_image_data(image_info_t image_info){
                     blue = blue - surrounding_pixel[i].b; 
                 }
             } 
-
+            if(red > 255)
+                red = 255; 
+            if(red < 0)
+                red = 0; 
+            if(green > 255)
+                green = 255; 
+            if(green < 0)
+                green = 0; 
+            if(blue > 255)
+                blue = 255; 
+            if(blue < 0)
+                blue = 0; 
+                
             // Newly calculated information
             sp.r = red; 
             sp.g = green; 
@@ -537,8 +549,8 @@ image_info_t change_hue(image_info_t image_info, double hue){
             if(g > 255)
                 g = 255;
 
-            if (r < 0)
-                r = 0; 
+            if (g < 0)
+                b = 0; 
 
             if(b > 255)
                 g = 255; 
