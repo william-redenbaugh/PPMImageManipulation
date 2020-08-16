@@ -24,6 +24,12 @@ typedef struct{
     int b; 
 }surrounding_pixels_t;
 
+typedef struct{
+    double alpha; 
+    double beta; 
+    double gamma; 
+}hue_calc_t; 
+
 /*
 *   @brief Struct that allows us to deal with pixel setting stuff
 *   @notes can be coppied or passed around depending on the use case scenario
@@ -62,6 +68,8 @@ inline void gather_surrounding_pixels(set_get_pixel_t sp, surrounding_pixels_t s
 inline void cal_average_sharpen (set_get_pixel_t *sp, surrounding_pixels_t surrounding_pixel[9]); 
 void free_image_data_mem(image_info_t *image_info); 
 image_info_t change_hue(image_info_t image_info, double hue); 
+inline hue_calc_t calculate_hue(double hue);
+inline set_get_pixel_t calc_pixel_hue(set_get_pixel_t sp, hue_calc_t hue_calc); 
 
 /*
     How is the image array stored in memory? That's an interested question that you have professor. I'm glad you asked. 
@@ -590,30 +598,17 @@ void free_image_data_mem(image_info_t *image_info){
 // Used for functional purposes. 
 
 image_info_t change_hue(image_info_t image_info, double hue){
-    // If hue is greater than 360, then let's just allow ourselves to wrap around. 
-    if(hue > 360){
-        hue = (double)((uint16_t)(hue) % 360); 
-    }
-    // If it's a negative value, then we do the inverted version of the value above us 
-    if(hue < 0){
-        hue = (double)((uint16_t)(hue) % 360) * -1; 
-    }
-
     image_info_t new_image_info = image_info; 
     // Create a new array and copy the contents over. 
     uint16_t *newimage = (uint16_t*)malloc(sizeof(uint16_t) * image_info.image_dat.x * image_info.image_dat.y * 3 + 100);
     // Change pointer for new image. 
     new_image_info.image_dat.image_arr = newimage; 
     
-    // Struct that deals with pixel information
-    set_get_pixel_t sp; 
+    // Struct that helps with hue calculations
+    hue_calc_t hue_calc = calculate_hue(hue);
 
-    // Information that we are processing. 
-    #define PI 3.14159265 
-    double alpha = (2 * cos(hue * PI / 180) + 1)/3;
-    double beta = ((1 - cos(hue * PI / 180))/3) - (sin(hue * PI / 180))/sqrt(3.0); 
-    double gamma = ((1 - cos(hue * PI / 180))/3) + (sin(hue * PI / 180))/sqrt(3.0); 
-    #undef PI
+    // Struct that deals with pixel information
+    set_get_pixel_t sp;
 
     for(uint32_t y = 0; y < image_info.image_dat.y; y++){
         for(uint32_t x = 0; x < image_info.image_dat.x; x++){
@@ -627,34 +622,8 @@ image_info_t change_hue(image_info_t image_info, double hue){
             // Gets the original pixel data. 
             get_pixel(&sp);
 
-            // Buffers for use later. 
-            double red = (double)sp.r; 
-            double green = (double)sp.g; 
-            double blue = (double)sp.b; 
-
-            // Offset color hue
-            int r = (double)(red * alpha + green * beta + blue * gamma); 
-            int g = (double)(red * gamma + green * alpha + blue * beta); 
-            int b = (double)(red * beta + green * gamma + blue * alpha); 
-
-            if(r > 255)
-                r = 255;
-            if(r < 0)
-                r = 0;  
-            if(g > 255)
-                g = 255;
-
-            if (g < 0)
-                b = 0; 
-
-            if(b > 255)
-                g = 255; 
-            if(b < 0)
-                b = 0; 
-
-            sp.r = r; 
-            sp.g = g; 
-            sp.b = b; 
+            // Calculate new pixel using the hue calculations. 
+            sp = calc_pixel_hue(sp, hue_calc);
 
             // Set our source destination as our last image data. 
             sp.image_data = &new_image_info.image_dat; 
@@ -668,4 +637,66 @@ image_info_t change_hue(image_info_t image_info, double hue){
     return new_image_info;
 }
 
+/*
+*   @brief Pass in a double floating point hue value. 
+*   @notes Calculation is return in components via a struct
+*   @params double hue value 
+*   @returns hue_calc_t struct with the math resultants 
+*/
+inline hue_calc_t calculate_hue(double hue){
+    // If hue is greater than 360, then let's just allow ourselves to wrap around. 
+    if(hue > 360){
+        hue = (double)((uint16_t)(hue) % 360); 
+    }
+    // If it's a negative value, then we do the inverted version of the value above us 
+    if(hue < 0){
+        hue = (double)((uint16_t)(hue) % 360) * -1; 
+    }
+    hue_calc_t hue_calc; 
+    #define PI 3.14159265 
+    hue_calc.alpha = (2 * cos(hue * PI / 180) + 1)/3;
+    hue_calc.beta = ((1 - cos(hue * PI / 180))/3) - (sin(hue * PI / 180))/sqrt(3.0); 
+    hue_calc.gamma = ((1 - cos(hue * PI / 180))/3) + (sin(hue * PI / 180))/sqrt(3.0); 
+    #undef PI
+
+    return hue_calc; 
+}
+
+/*
+*   @brief Takes in a pixel and some hue calculations and returns a new pixel with the hue calculations
+*   @params set_get_pixel_t sp (pixel in question)
+*   @params hue_calc_t hue_calc the hue calculations that hold everything
+*/
+inline set_get_pixel_t calc_pixel_hue(set_get_pixel_t sp, hue_calc_t hue_calc){
+    // Buffers for use later. 
+    double red = (double)sp.r; 
+    double green = (double)sp.g; 
+    double blue = (double)sp.b; 
+
+    // Offset color hue
+    int r = (double)(red * hue_calc.alpha + green * hue_calc.beta + blue * hue_calc.gamma); 
+    int g = (double)(red * hue_calc.gamma + green * hue_calc.alpha + blue * hue_calc.beta); 
+    int b = (double)(red * hue_calc.beta + green * hue_calc.gamma + blue * hue_calc.alpha); 
+
+    // Clip out values
+    if(r > 255)
+        r = 255;
+    if(r < 0)
+        r = 0;  
+    if(g > 255)
+        g = 255;
+    if (g < 0)
+        g = 0; 
+    if(b > 255)
+        g = 255; 
+    if(b < 0)
+        b = 0; 
+
+    // Set the pixel. 
+    sp.r = r; 
+    sp.g = g; 
+    sp.b = b; 
+    
+    return sp; 
+}
 #undef DEFINE_PPM
