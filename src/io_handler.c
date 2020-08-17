@@ -42,10 +42,11 @@ void print_menu(void){
     printf("3: Change the color image to black and white\n");
     printf("4: Sharpen the image\n");
     printf("5: Change the hue of image\n");
-    printf("6: Test all functions\n");
-    printf("7: Revert to previous image\n"); 
-    printf("8: Regrets were made(revert to original image)\n");
-    printf("9: Exit\n");
+    printf("6: Test each function \n"); 
+    printf("7: Test all functions in order\n");
+    printf("8: Revert to previous image\n"); 
+    printf("9: Regrets were made(revert to original image)\n");
+    printf("10: Exit\n");
     printf("----------------------------------------------\n");
 }
 
@@ -62,8 +63,8 @@ uint8_t prompt_choice(void){
     scanf("%d", &choice);
     printf("\n");
 
-    if(choice > 9)
-        choice = 7; 
+    if(choice > 10)
+        choice = 10; 
     if(choice < 1)
         choice = 1; 
 
