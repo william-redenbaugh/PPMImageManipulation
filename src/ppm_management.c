@@ -199,12 +199,13 @@ static inline image_info_t get_file_path(char *file_path){
         printf("Couldn't find file\n");
         img_info.unpack_status = IMAGE_UNPACK_FAIL_FILE_DNE;
         // Error the hell outa here. 
-        assert(fp);
+        //assert(fp);
         return img_info;    
     }
 
     // Set the file pointer. 
     img_info.file_ptr = fp; 
+    img_info.unpack_status = IMAGE_FILE_READ_NO_UNPACK; 
     printf("Found file successfully!\n");
     return img_info; 
 }

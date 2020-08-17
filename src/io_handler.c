@@ -21,6 +21,18 @@ file_information_t prompt_file_information(void){
 }
 
 /*
+*   @brief empties out the file information struct, and frees malloced memory. 
+*   @params file_information_t *file_info pointer. 
+*/
+void free_file_information(file_information_t *file_info){
+    // Just in case the string pointer is null(aka uninitialized, we don't want program to fail on accident)
+    if(file_info->str_ptr != NULL)
+        free(file_info->str_ptr); 
+    
+    file_info->str_size = 0; 
+}
+
+/*
 *   @brief Prints out the main header: 
 */
 void print_menu(void){
@@ -31,7 +43,9 @@ void print_menu(void){
     printf("4: Sharpen the image\n");
     printf("5: Change the hue of image\n");
     printf("6: Test all functions\n");
-    printf("7: Exit\n");
+    printf("7: Revert to previous image\n"); 
+    printf("8: Regrets were made(revert to original image)\n");
+    printf("9: Exit\n");
     printf("----------------------------------------------\n");
 }
 
@@ -41,15 +55,38 @@ void print_menu(void){
 */
 uint8_t prompt_choice(void){
     // Array pointer to all our file stuff
-    uint8_t choice = 0; 
+    int choice = 0; 
 
     // Read in that information
     printf("Please make your choice: ");
     scanf("%d", &choice);
     printf("\n");
 
-    // Energy out of bounds. 
-    if(choice > 7)
+    if(choice > 9)
         choice = 7; 
-    return choice; 
+    if(choice < 1)
+        choice = 1; 
+
+    return (uint8_t)choice; 
+}
+
+/*
+*   @brief Ask the use what value of hue they want to set their image to
+*   @returns the hue value 
+*/
+uint16_t prompt_hue(void){
+    // Array pointer to all our file stuff
+    int choice = 0; 
+
+    // Read in that information
+    printf("Please enter the proppery hue value: ");
+    scanf("%d", &choice);
+    printf("\n");
+
+    if(choice > 360)
+        choice = 260; 
+    if(choice < 0)
+        choice = 0; 
+
+    return (uint16_t)choice; 
 }

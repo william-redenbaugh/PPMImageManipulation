@@ -34,4 +34,16 @@ void print_menu(void);
 *   @returns choice a month. 
 */
 uint8_t prompt_choice(void);
+
+/*
+*   @brief Ask the use what value of hue they want to set their image to
+*   @returns the hue value 
+*/
+uint16_t prompt_hue(void);
+
+/*
+*   @brief empties out the file information struct, and frees malloced memory. 
+*   @params file_information_t *file_info pointer. 
+*/
+void free_file_information(file_information_t *file_info);
 #endif 
