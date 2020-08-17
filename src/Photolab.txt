@@ -1,0 +1,16 @@
+By William Mariano Redenbaugh
+EECS22
+August 17th, 2020
+
+Description: 
+This is a basic image processing program, it has the ability to apply a few filters to an inputted ppm image. 
+- Sharpen (adding a sharpening filter)
+- Black and White(changes image to monotone)
+- Age(makes image look "older")
+- Hue change("shifts colors over")
+
+Code context and explanations are best left to the source code itself. Comments are Doxygen compatable, but missing some of the notation since I'm not going to put this into the doxygen generator. 
+
+Best, 
+
+-William

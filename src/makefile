@@ -13,6 +13,6 @@ PPMImageManipulation: PPMImageManipulation ppm_management.o io_handler.o main.o
 	$(CC) $(CFLAGS) -o PPMImageManipulation ppm_management.o io_handler.o main.o  $(LDFLAGS)
 
 clean:
-	rm -f PPMImageManipulation ppm_management.o main.o
+	rm -f PPMImageManipulation ppm_management.o io_handler.o main.o
 FORCE:
 	.PHONY: FORCE
